@@ -5,30 +5,44 @@
   an open-model evaluation service, judged by MIZAN
   ________________________________________________
 
-  base url   https://eval.cultureyes.ae
+  website    https://eval.cultureyes.ae   ← not a dev? go here, no code needed
   api        /api/v1      sign in, submit models, run evaluations
   hub        /public      the Leaderboard, downloads, chat with MIZAN
   errors     RFC 9457 problem+json, 35 codes, bilingual reasons
   ________________________________________________
 ```
 
-Everything a developer needs to connect to the [HIM-Eval](https://eval.cultureyes.ae)
-evaluation service. Nothing you don't.
+## What is HIM-Eval?
+
+You upload a model. We run it inside **HIM** — our adaptive inference engine that accepts
+any model format, no adapter, no conversion, no coding. A blind judge operator named
+**MIZAN (ميزان)** grades every answer by meaning. You get a report: strengths, gaps, what
+your model needs. Results go to a public, bilingual (العربية / English) Leaderboard.
+
+It exists because existing leaderboards refuse models that ship their own code. The
+Open Arabic LLM Leaderboard would not accept our own model for that reason. Exact-match
+scoring is broken — in our own test, word matching scored 37/100 while reading the
+answers by meaning gave 45/100. HIM-Eval accepts **any model** and judges by meaning.
+
+**Not a developer?** Go straight to **[eval.cultureyes.ae](https://eval.cultureyes.ae)** —
+sign in, upload, watch live status, read your report, chat with MIZAN about the results.
+This repo is the API for developers who want to script it.
 
 ## Created by Mohamed Al Hajeri
 
-HIM-Eval is created and architected by **Mohamed Al Hajeri** — a **NVIDIA Inception**
+HIM-Eval is created and architected by **Mohamed Al Hajeri** — **NVIDIA Inception**
 builder, running on the **AWS cloud**.
 
 Two of his creations meet in this service:
 
-- **MIZAN (ميزان)**, the judge that scores every model's answers, was born on
-  [opsoul.dev](https://opsoul.dev/operators/d5ce4ed7-aa04-470c-b26b-4575d024bdf4) —
+- **MIZAN (ميزان)** — the judge that scores every model's answers, born on
+  [opsoul.dev](https://opsoul.dev/operators/d5ce4ed7-aa04-470c-b26b-4575d024bdf4),
   his operator platform. The judge grew from there under its own charter, and this
   service holds it accountable: pinned by version, qualified before it serves anyone.
-- **HIM — the Hajeri Inference Manager**, the next-level inference engine — also his
-  creation. The models this service evaluates run on HIM, and it is working and
-  running here, now.
+  Live qualification: **8/8 grading agreement, 100%**.
+- **HIM — the Hajeri Inference Manager** — the next-level inference engine, also his
+  creation. Self-installing, hardware-adaptive, zero cold start. The models this
+  service evaluates run on HIM, and it is working and running here, now.
 
 ## What the service does
 
@@ -68,7 +82,7 @@ curl -X POST https://eval.cultureyes.ae/api/v1/auth/tokens \
 
 # then use it everywhere a session works
 curl https://eval.cultureyes.ae/api/v1/whoami \
-  -H "Authorization: Bearer hime_pat_..."
+  -H "Authorization: Bearer ***"
 ```
 
 Tokens carry no admin rights and never carry MFA — administrator actions need a
@@ -79,7 +93,7 @@ multi-factor authenticated session.
 ```bash
 # 1. create a Submission for your model
 curl -X POST https://eval.cultureyes.ae/api/v1/submissions \
-  -H "Authorization: Bearer $PAT" -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ***" -H "Content-Type: application/json" \
   -d '{"model_name": "MyModel-1B", "stated_licence": "apache-2.0", ...}'
 
 # 2. upload weights and declaration — resumable tus uploads at /files,
@@ -87,14 +101,14 @@ curl -X POST https://eval.cultureyes.ae/api/v1/submissions \
 
 # 3. request an Evaluation_Run
 curl -X POST https://eval.cultureyes.ae/api/v1/submissions/$ID/runs \
-  -H "Authorization: Bearer $PAT"
+  -H "Authorization: Bearer ***"
 
 # 4. poll live status (updates within 60 seconds)
-curl https://eval.cultureyes.ae/api/v1/runs/$RUN_ID -H "Authorization: Bearer $PAT"
+curl https://eval.cultureyes.ae/api/v1/runs/$RUN_ID -H "Authorization: Bearer ***"
 
 # 5. read results, publish to the Leaderboard when you are ready
 curl -X POST https://eval.cultureyes.ae/api/v1/runs/$RUN_ID/publication \
-  -H "Authorization: Bearer $PAT"
+  -H "Authorization: Bearer ***"
 ```
 
 ## Errors: one format, always
