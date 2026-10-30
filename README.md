@@ -15,14 +15,28 @@
 Everything a developer needs to connect to the [HIM-Eval](https://eval.cultureyes.ae)
 evaluation service. Nothing you don't.
 
+## Created by Mohamed Al Hajeri
+
+HIM-Eval is created and architected by **Mohamed Al Hajeri** — a **NVIDIA Inception**
+builder, running on the **AWS cloud**.
+
+Two of his creations meet in this service:
+
+- **MIZAN (ميزان)**, the judge that scores every model's answers, was born on
+  [opsoul.dev](https://opsoul.dev/operators/d5ce4ed7-aa04-470c-b26b-4575d024bdf4) —
+  his operator platform. The judge grew from there under its own charter, and this
+  service holds it accountable: pinned by version, qualified before it serves anyone.
+- **HIM — the Hajeri Inference Manager**, the next-level inference engine — also his
+  creation. The models this service evaluates run on HIM, and it is working and
+  running here, now.
+
 ## What the service does
 
-Models run in GPU-isolated sandboxes, one at a time. A blind independent judge —
-[MIZAN](https://opsoul.dev/operators/d5ce4ed7-aa04-470c-b26b-4575d024bdf4), an
-evaluation operator — grades every answer, and the results publish to a public,
-bilingual (العربية / English) Leaderboard. Model owners submit models, watch live
-status, read results, and publish. Everyone else reads the Hub and can ask MIZAN
-about the results in their own language.
+Models run in GPU-isolated sandboxes, one at a time. MIZAN grades every answer blind
+— owners never enter the judgment — and the results publish to a public, bilingual
+(العربية / English) Leaderboard. Model owners submit models, watch live status, read
+results, and publish. Everyone else reads the Hub and can ask MIZAN about the results
+in their own language.
 
 ## Connect in 30 seconds
 
