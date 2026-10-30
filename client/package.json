@@ -1,0 +1,12 @@
+{
+  "name": "@cultureyes-stack/him-eval-api",
+  "version": "1.0.0",
+  "description": "The generated typed client of the HIM-Eval API (96 operations, zero dependencies).",
+  "main": "api-client.ts",
+  "types": "api-client.ts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CULTUREYES-stack/him-eval-api.git"
+  }
+}

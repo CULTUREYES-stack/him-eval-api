@@ -1,0 +1,530 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "HIM Evaluation Hub",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/public/hub-chat": {
+      "get": {
+        "tags": [
+          "hub-chat"
+        ],
+        "summary": "The Hub_Chat's opening notice",
+        "description": "Requirement 21.18, before the Visitor sends anything: the Judge_Operator answers only from Public_Data, Hub_Chat answers are not evaluation results, and conversations are kept for the configured Hub_Chat_Log_Retention -- stated as a duration -- for quality and support and then deleted, with the rate limit shown.",
+        "operationId": "hub_chat_notice",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Hub Chat Notice"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/hub-chat/messages": {
+      "post": {
+        "tags": [
+          "hub-chat"
+        ],
+        "summary": "Send one Hub_Chat message",
+        "description": "One message of 1 to 2,000 Unicode code points (Requirement 21.14). The answer comes from the Judge_Operator of the Hub_Chat Judge_Version fixed for the Season in progress at send time, validated against the current public state and the message's language, retried up to the Judge_Retry_Limit within 60 seconds (Requirement 21.11). A message that could not be answered returns the notice and no answer, not an error.",
+        "operationId": "send_hub_chat_message",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Send Hub Chat Message"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The rate limit is reached; retry from the stated time."
+          },
+          "503": {
+            "description": "The Hub_Chat is unavailable right now."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/hub-chat/conversation": {
+      "get": {
+        "tags": [
+          "hub-chat"
+        ],
+        "summary": "This session's Hub_Chat conversation",
+        "description": "The messages of this browser session's conversation, each with the answer shown for it and the Judge_Version that answered it -- and no other session's conversation, whoever asks (Requirement 21.16).",
+        "operationId": "hub_chat_conversation",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Hub Chat Conversation"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/seasons/{name}/tracks/{track}/download": {
+      "get": {
+        "tags": [
+          "downloads"
+        ],
+        "summary": "Download one Leaderboard table",
+        "description": "The table of one Season and Track, in the selected format (JSON or CSV, UTF-8 without a BOM), listing the entries in rank order with the fields of Requirement 19.2, the Service_Administrator flag of 19.7, and the public model page address, and no Item_Level_Data (Requirements 32.9, 32.10). CSV quotes every text field (RFC 4180) and writes the recorded values exactly; free-text fields may start with =, +, -, or @. An invalid Season, Track, or format answers `invalid_download_request` naming each invalid value (Requirement 32.11).",
+        "operationId": "download_leaderboard",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "track",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Track"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "json",
+              "title": "Format"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/seasons": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "The Leaderboard",
+        "description": "The most recently started Season with one ranked table per Track, and the selection of every Season -- archived Seasons included -- a Visitor may open (Requirement 19.1). No authentication (Requirement 1.2).",
+        "operationId": "public_leaderboard",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Public Leaderboard"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/seasons/{name}/tracks/{track}/leaderboard": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "One Season-and-Track table",
+        "description": "The entries of one table, ranked by Overall_Score with equal scores sharing a rank and ranks then skipping (Requirements 4.9, 19.1), sorted by the chosen column and direction with ties by evaluation date from earliest to latest, filtered by an inclusive Parameter_Count range and the Custom_Code label (Requirements 19.3, 19.4). The rank column always shows the Overall_Score rank. An invalid range keeps the entries unchanged and is reported (Requirement 19.8).",
+        "operationId": "public_track_leaderboard",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "track",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "base",
+                "finished"
+              ],
+              "type": "string",
+              "title": "Track"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "overall_score",
+                "parameter_count",
+                "category_score"
+              ],
+              "type": "string",
+              "default": "overall_score",
+              "title": "Sort"
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string",
+              "default": "desc",
+              "title": "Direction"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "name": "parameter_count_min",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Parameter Count Min"
+            }
+          },
+          {
+            "name": "parameter_count_max",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Parameter Count Max"
+            }
+          },
+          {
+            "name": "custom_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Custom Code"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Public Track Leaderboard"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/seasons/{name}/settings": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "One Season's settings page",
+        "description": "The Season's name, its Hub_Chat Judge_Version, and each Track's Judge_Version with the name, version, source, licence, and Task_Set_Hash of each of its Task_Set_Versions (Requirements 22.4, 27.2).",
+        "operationId": "public_season_settings",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Public Season Settings"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/models/{entry_id}": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "One public model page",
+        "description": "The entry's own fields with its Season's name, dates, and archived label, and its published Report link when there is one (Requirements 20.1, 20.6). A page that was withdrawn or deleted shows only the notice that it is no longer published (Requirement 20.3).",
+        "operationId": "public_model_page",
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Entry Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Public Model Page"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/documentation": {
+      "get": {
+        "tags": [
+          "public"
+        ],
+        "summary": "The HTTP_API documentation page",
+        "description": "Requirement 32.8: both OpenAPI documents and the error-code reasons of the single catalogue, side by side. The main service's OpenAPI document and the Hub's own are addressed here, and every error code the catalogue defines is published with its refusal reason, in both Interface languages.",
+        "operationId": "public_api_documentation",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Public Api Documentation"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "MessageBody": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "MessageBody"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
